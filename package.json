@@ -9,6 +9,7 @@
     "@types/promise.prototype.finally": "2.0.2",
     "@types/rc": "0.0.1",
     "airgram": "0.1.8",
+    "airgram-debug": "^0.1.4",
     "del": "3.0.0",
     "gulp": "3.9.1",
     "gulp-sourcemaps": "2.6.4",
@@ -23,11 +24,11 @@
     "typescript": "3.1.6"
   },
   "scripts": {
-    "authorize-user": "node ./dist/user.authorize.js",
-    "authorize-bot": "node ./dist/bot.authorize.js",
+    "authorize-user": "DEBUG=airgram* node ./dist/user.authorize.js",
+    "authorize-bot": "DEBUG=airgram* node ./dist/bot.authorize.js",
     "build": "gulp",
     "start": "...",
-    "test": "jest"
+    "test": "DEBUG=airgram* jest"
   },
   "keywords": [],
   "author": "",

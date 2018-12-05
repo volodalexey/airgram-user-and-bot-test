@@ -2,9 +2,10 @@ const promiseFinally = require('promise.prototype.finally');
 promiseFinally.shim();
 import 'reflect-metadata';
 import {Airgram, ag, AuthDialog, TYPES, api} from "airgram";
+import DebugLogger from "airgram-debug"
 import JSONBotStore from "./bot.store";
 import JSONUserStore from "./user.store";
-import {prompt} from "airgram/helpers";
+import {getCalleeName, prompt} from "airgram/helpers";
 import { AppBotConfigType, AppUserConfigType } from './config';
 
 export function createApp(config: AppBotConfigType | AppUserConfigType): Airgram {
@@ -19,23 +20,37 @@ export function createApp(config: AppBotConfigType | AppUserConfigType): Airgram
     airgram.bind<JSONUserStore<ag.MtpState>>(TYPES.MtpStateStore).to(JSONUserStore);
   }
 
-  const { auth } = airgram;
+  airgram.bind<ag.Logger & { level: string }>(TYPES.Logger).to(DebugLogger)
+    .onActivation((context, logger) => {
+      logger.namespace = [getCalleeName(context)]
+      logger.level = 'debug'
+      return logger
+    })
 
-  airgram.use(auth);
-
-  auth.use(new AuthDialog({
-    firstName: '',
-    lastName: '',
-    phoneNumber: config.phone_number,
-    code: () => prompt('Please input the secret code:'),
-    samePhoneNumber: ({ phoneNumber }) => prompt(`Do you want to sign in with the "${phoneNumber}" phone number? Y/N`),
-    continue: ({ phoneNumber }) => prompt(`Do you have the secret code for the "${phoneNumber}" and wish to continue? Y/N`)
-  }));
+  //
+  // FIXME: You use `Auth` middleware twice, it is not correctly.
+  //
+  // const { auth } = airgram;
+  //
+  // airgram.use(auth);
+  //
+  // auth.use(new AuthDialog({
+  //   firstName: '',
+  //   lastName: '',
+  //   phoneNumber: config.phone_number,
+  //   code: () => prompt('Please input the secret code:'),
+  //   samePhoneNumber: ({ phoneNumber }) => prompt(`Do you want to sign in with the "${phoneNumber}" phone number? Y/N`),
+  //   continue: ({ phoneNumber }) => prompt(`Do you have the secret code for the "${phoneNumber}" and wish to continue? Y/N`)
+  // }));
 
   return airgram
 }
 
 export default createApp
+
+function populateAnswer(answer: string) {
+  return !(['N', 'n'].indexOf(answer.charAt(0)) > -1)
+}
 
 export function authorizeApp(airgram: Airgram, config: AppBotConfigType | AppUserConfigType) {
   airgram.auth.use(new AuthDialog({
@@ -43,8 +58,10 @@ export function authorizeApp(airgram: Airgram, config: AppBotConfigType | AppUse
     lastName: '',
     phoneNumber: config.phone_number,
     code: () => prompt('Please input the secret code:'),
-    samePhoneNumber: ({ phoneNumber }) => prompt(`Do you want to sign in with the "${phoneNumber}" phone number? Y/N`),
+    samePhoneNumber: ({ phoneNumber }) => prompt(`Do you want to sign in with the "${phoneNumber}" phone number? Y/N`)
+      .then(populateAnswer),
     continue: ({ phoneNumber }) => prompt(`Do you have the secret code for the "${phoneNumber}" and wish to continue? Y/N`)
+      .then(populateAnswer)
   }));
 
   return airgram.auth.login()
