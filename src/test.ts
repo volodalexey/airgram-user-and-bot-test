@@ -22,10 +22,12 @@ describe("Check e2e Bot response", () => {
 
   test("User send /start command and receive response", async () => {
     jest.setTimeout(30000);
-    expect.assertions(1);
+    expect.assertions(2);
 
-    await sendChatMessage(userApp, chatId, 'Hello from User');
-    await sendChatMessage(botApp, chatId, 'Hello from Bot');
+    await Promise.all([
+      sendChatMessage(userApp, chatId, 'Hello from User').then(() => expect(true).toBe(true)),
+      sendChatMessage(botApp, chatId, 'Hello from Bot').then(() => expect(true).toBe(true))
+    ])
   });
 
 });
