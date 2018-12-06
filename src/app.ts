@@ -27,21 +27,9 @@ export function createApp(config: AppBotConfigType | AppUserConfigType): Airgram
       return logger
     })
 
-  //
-  // FIXME: You use `Auth` middleware twice, it is not correctly.
-  //
-  // const { auth } = airgram;
-  //
-  // airgram.use(auth);
-  //
-  // auth.use(new AuthDialog({
-  //   firstName: '',
-  //   lastName: '',
-  //   phoneNumber: config.phone_number,
-  //   code: () => prompt('Please input the secret code:'),
-  //   samePhoneNumber: ({ phoneNumber }) => prompt(`Do you want to sign in with the "${phoneNumber}" phone number? Y/N`),
-  //   continue: ({ phoneNumber }) => prompt(`Do you have the secret code for the "${phoneNumber}" and wish to continue? Y/N`)
-  // }));
+  const { auth } = airgram;
+
+  airgram.use(auth);
 
   return airgram
 }
