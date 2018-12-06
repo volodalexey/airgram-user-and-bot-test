@@ -44,6 +44,8 @@ export function initializeApp(airgram: Airgram) {
     return next()
   }
 
+  airgram.use(updates)
+
   updates.use(handleNewUpdate);
 
   updates.on('updateNewMessage', (ctx, next) => {
