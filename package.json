@@ -28,7 +28,8 @@
     "authorize-bot": "DEBUG=airgram* node ./dist/bot.authorize.js",
     "build": "gulp",
     "start": "...",
-    "test": "DEBUG=airgram* jest"
+    "test-debug": "DEBUG=airgram* jest",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",

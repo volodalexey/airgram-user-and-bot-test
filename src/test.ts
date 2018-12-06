@@ -1,7 +1,8 @@
 import Airgram from 'airgram';
 
-import { createApp, getDifference, getLastChatMessage, sendChatMessage } from './app';
+import { createApp, initializeApp, sendChatMessage } from './app';
 import { AppBotConfigType, createBotConfig, AppUserConfigType, createUserConfig } from './config';
+import { resolve } from 'dns';
 
 describe("Check e2e Bot response", () => {
   let botConfig: AppBotConfigType;
@@ -18,16 +19,22 @@ describe("Check e2e Bot response", () => {
     userApp = createApp(userConfig);
 
     chatId = botConfig.chat_id;
+
+    return initializeApp(botApp)
   });
 
   test("User send /start command and receive response", async () => {
     jest.setTimeout(30000);
-    expect.assertions(2);
+    expect.assertions(1);
+    const startCmd = '/start';
 
-    await Promise.all([
-      sendChatMessage(userApp, chatId, 'Hello from User').then(() => expect(true).toBe(true)),
-      sendChatMessage(botApp, chatId, 'Hello from Bot').then(() => expect(true).toBe(true))
-    ])
+    await sendChatMessage(userApp, chatId, startCmd);
+
+    await new Promise((resolve) => {
+      setTimeout(resolve, 25000)
+    })
+
+    expect(true).toBe(true);
   });
 
 });

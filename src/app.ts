@@ -48,6 +48,26 @@ export function createApp(config: AppBotConfigType | AppUserConfigType): Airgram
 
 export default createApp
 
+export function initializeApp(airgram: Airgram) {
+  const { updates } = airgram;
+
+  function handleNewUpdate(ctx: ag.UpdateContext, next) {
+    console.log(`Update type: ${ctx._}`);
+    return next()
+  }
+
+  updates.use(handleNewUpdate);
+
+  updates.on('updateNewMessage', (ctx, next) => {
+    console.log(`New message: ${ctx.update}`)
+    return next()
+  });
+
+  return updates.startPolling().then(() => {
+    console.log('Long polling started')
+  })
+}
+
 function populateAnswer(answer: string) {
   return !(['N', 'n'].indexOf(answer.charAt(0)) > -1)
 }
