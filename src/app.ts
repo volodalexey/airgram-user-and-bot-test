@@ -39,23 +39,23 @@ export default createApp
 export function initializeApp(airgram: Airgram) {
   const { updates } = airgram;
 
-  function handleNewUpdate(ctx: ag.UpdateContext, next) {
-    console.log(`Update type: ${ctx._}`);
-    return next()
-  }
-
   airgram.use(updates)
 
-  updates.use(handleNewUpdate);
-
-  updates.on('updateNewMessage', (ctx, next) => {
-    console.log(`New message: ${ctx.update}`)
+  updates.on('updateNewMessage', ({ update }, next) => {
+    if (update._ === 'updateNewMessage' && update.message._ === 'message') {
+      if (update.message.message === '/start') {
+        if (update.message.to_id && update.message.to_id._ === 'peerChat') {
+          const chatId = update.message.to_id.chat_id;
+          return next().then(() => {
+            return sendChatMessage(airgram, chatId, 'I am ready!')
+          })
+        }
+      }
+    }
     return next()
   });
 
-  return updates.startPolling().then(() => {
-    console.log('Long polling started')
-  })
+  return updates.startPolling()
 }
 
 function populateAnswer(answer: string) {
@@ -85,7 +85,7 @@ export function sendChatMessage(airgram: Airgram, chat_id: number, text: string)
   })
 }
 
-export function getLastChatMessage(airgram: Airgram, chat_id: number): Promise<any> {
+export function getLastChatMessage(airgram: Airgram, chat_id: number): Promise<api.MessageUnion | null> {
   return airgram.client.messages.getHistory({
     peer: { _: 'inputPeerChat', chat_id: chat_id },
     add_offset: 0,
@@ -94,7 +94,12 @@ export function getLastChatMessage(airgram: Airgram, chat_id: number): Promise<a
     min_id: 0,
     offset_date: 0,
     offset_id: 0,
-  }).then(data => data.messages[0])
+  }).then(data => {
+    if (data.messages.length) {
+      return data.messages[0]
+    }
+    return null
+  })
 }
 
 export function getDifference(airgram: Airgram) {
