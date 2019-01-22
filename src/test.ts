@@ -39,9 +39,13 @@ describe("Check e2e Bot response", () => {
   });
 
   test("User send /start command and receive response", async () => {
-    jest.setTimeout(30000);
+    jest.setTimeout(60000);
     expect.assertions(1);
     const startCmd = '/start';
+    await new Promise((resolve) => {
+      console.log('You have 20 sec to pin some message as a user in group')
+      setTimeout(resolve, 20000)
+    })
 
     await sendChatMessage(userApp, chatId, startCmd);
 
@@ -53,5 +57,11 @@ describe("Check e2e Bot response", () => {
       expect(chatMessage.message).toBe('I am ready!');
     }
   });
+
+  afterAll(async () => {
+    await botApp.updates.stop();
+    await botApp.destroy();
+    await userApp.destroy();
+  })
 
 });

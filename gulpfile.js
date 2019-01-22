@@ -1,21 +1,24 @@
 const gulp = require('gulp');
 const del = require('del');
 const ts = require('gulp-typescript');
-const sourcemaps = require('gulp-sourcemaps');
-const runSequence = require('run-sequence'); // https://stackoverflow.com/a/22826429/5431545
+
 const tsProject = ts.createProject('tsconfig.json');
+const outputDir = './dist';
 
-gulp.task('clean', () => del(['./dist']));
+function clean() {
+  return del([outputDir])
+}
 
-gulp.task('copy', () => gulp
-  .src(['./src/**/*', '!./**/*.ts'])
-  .pipe(gulp.dest('./dist'))
-);
+function copy() {
+  return gulp
+    .src(['./src/**/*', '!./**/*.ts'])
+    .pipe(gulp.dest(outputDir))
+}
 
-gulp.task('build', () => tsProject.src()
-  .pipe(sourcemaps.init())
-  .pipe(tsProject())
-  .js.pipe(sourcemaps.write()).pipe(gulp.dest('dist'))
-);
+function build() {
+  return gulp.src('./src/**/*.ts', { sourcemaps: true })
+  .pipe(tsProject()).js
+  .pipe(gulp.dest(outputDir, { sourcemaps: '.' }))
+}
 
-gulp.task('default', (cb) => runSequence('clean', 'copy', 'build', cb));
+exports.default = gulp.series(clean, copy, build);
